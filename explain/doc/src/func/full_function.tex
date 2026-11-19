@@ -1,0 +1,327 @@
+% ！TeX program = luatex
+\documentclass[a4paper]{article}
+% \documentclass[UTF8]{ctexart}
+% 导言区
+% biber bibtex
+% \usepackage[backend=biber]{biblatex}
+
+% \usepackage{CJKutf8} % 支持中
+% fontset = none 消除Package ctex: Redefining CJKfamily `\CJKrmdefault'(ctex)	(FandolSong-Regular).
+% 重新定义字体警告
+\usepackage[fontset = none]{ctex} % 支持中文 必须先加载(LuaLaTeX)
+% \setmonofont[Mapping={}]{Monaco}    %英文引号之类的正常显示，相当于设置英文字体
+% \setsansfont{Monaco} %设置英文字体 Monaco, Consolas,  Fantasque Sans Mono
+% \setmainfont{Monaco} %设置英文字体
+% \setCJKmainfont{微软雅黑}  %中文字体设置
+% \setCJKsansfont{楷体} %设置中文字体
+% \setCJKmonofont{} %设置中文字体
+% \usepackage{xeCJK} % 支持中文 for XeLaTeX
+\usepackage{fontspec} % 支持中文 for LuaLaTeX
+\setCJKmainfont{LXGW WenKai} % 设置中文字体
+\setCJKsansfont{LXGW WenKai Mono} % 设置中文字体
+\setCJKmonofont{LXGW WenKai Mono} % 设置中文字体
+% 使用近似的替代字体
+\newfontface\myitalic{LXGW WenKai Mono}[FakeSlant=0.25] % 模拟斜体
+
+% 设置emoji字体 只支持 LuaLaTeX
+% 其他编译器用Noto Color Emoji只会报错
+% 只能用Noto Emoji
+\newfontfamily{\emoji}{Noto Emoji}
+
+\usepackage{babel} % load before hyperref
+\usepackage[colorlinks, linkcolor=skyblue]{hyperref} % 支持超链接式
+
+\babelprovide[import, main]{english} % 加载英语支持
+\babelprovide[import]{chinese-simplified} % 加载简体中文并设为主语言
+
+
+
+\usepackage{amsmath} % 支持数学符号 align*
+\usepackage{amssymb} % 更多数学符号 包括 ∄ 等
+\usepackage{esint} % 支持多重积分 包括 \unicode{222F} ∮∯ 等
+\usepackage{unicode-math}
+\unimathsetup{math-style=TeX} % 使用传统的TeX数学样
+
+\usepackage{listing} % 支持代码高亮，设置高亮样式
+
+% 处理对齐问题：\toprule， \midrule
+
+%导言区插入下面三行
+\usepackage{graphicx} %插入图片的宏包
+\usepackage{float} %设置图片浮动位置的宏包
+% Deprecated 不再更新
+% \usepackage{subfigure} %插入多图时用子图显示的宏包
+% 使用 subcaption 替代
+\usepackage{subcaption} % 支持子图
+% https://xfxuezhang.blog.csdn.net/article/details/144632165?spm=1001.2101.3001.6650.4&utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7EYuanLiJiHua%7EPosition-4-144632165-blog-103762494.235%5Ev43%5Epc_blog_bottom_relevance_base7&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7EYuanLiJiHua%7EPosition-4-144632165-blog-103762494.235%5Ev43%5Epc_blog_bottom_relevance_base7&utm_relevant_index=9
+% 还是使用 subfigure {begin/end}
+
+\usepackage{pdfpages} % 支持插入PDF
+% 和pdfpages里面的xcolor包冲突
+% \usepackage{xcolor} % 支持颜色设置
+\usepackage{tabularx} % 支持表格自动列宽、
+
+\usepackage{listings}   % 支持代码高亮，设置高亮样式
+% \usepackage[usenames,dvipsnames]{xcolor}    % 支持颜色设置，用于高亮不同颜色关键字
+\usepackage{embrac}   % 支持斜体直体 粗体等字体样式的宏包
+\usepackage{colortbl}  % 支持颜色
+
+\usepackage{booktabs} % 表格的支持需要加载宏包{booktabs}
+
+\usepackage{hhline} % 支持表格分割线双横线双竖线
+\usepackage{makecell} % 支持表格内换行
+\usepackage{multirow} % 支持跨行合并单元格
+\usepackage{multicol}
+\usepackage{stfloats} % 防止表格乱跑
+
+
+\usepackage{longtable} % 跨页表格
+
+\usepackage{diagbox} % 支持表格斜线
+
+\usepackage{ulem} % 支持删除线 https://www.jianshu.com/p/a1838fa53882
+
+\usepackage{pifont} % 支持带圈数字
+
+\usepackage{enumitem} % 支持列表缩进
+
+\usepackage{bigstrut}
+
+\usepackage[fontsize=8pt]{fontsize}
+\usepackage{geometry} % 支持调整页边距
+
+\usepackage{epsfig} % 支持插入eps图片
+\usepackage{svg} % 支持插入svg图片
+
+\usepackage{bookmark} % Fixes the rerunfilecheck issue
+
+\svgsetup{
+  inkscapeexe = /usr/bin/inkscape,
+}
+
+% ---------------- RISV-V Assembler syntax and style for latex lstlisting package ----------------
+% RISC-V Assembler syntax and style for latex lstlisting package
+% 
+% These are risc-v commands as per our university (University Augsburg, Germany) guidelines.
+%
+% Author: Anton Lydike
+%
+% This code is in the public domain and free of licensing
+
+% language definition
+% \begin{Language_Definition}
+\lstdefinelanguage[RISC-V]{Assembler}
+{
+  alsoletter={.}, % allow dots in keywords
+  alsodigit={0x}, % hex numbers are numbers too!
+  morekeywords=[1]{ % instructions
+    lb, lh, lw, lbu, lhu,
+    sb, sh, sw,
+    sll, slli, srl, srli, sra, srai,
+    add, addi, sub, lui, auipc,
+    xor, xori, or, ori, and, andi,
+    slt, slti, sltu, sltiu,
+    beq, bne, blt, bge, bltu, bgeu,
+    j, jr, jal, jalr, ret,
+    scall, break, nop
+  },
+  morekeywords=[2]{ % section*s of our code and other directives
+    .align,.ascii,.asciiz,.byte,.data,.double,.extern,
+    .float,.globl,.half,.kdata,.ktext,.set,.space,.text,.word
+  },
+  morekeywords=[3]{ % registers
+    zero, ra, sp, gp, tp, s0, fp,
+    t0, t1, t2, t3, t4, t5, t6,
+    s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11,
+    a0, a1, a2, a3, a4, a5, a6, a7,
+    ft0, ft1, ft2, ft3, ft4, ft5, ft6, ft7,
+    fs0, fs1, fs2, fs3, fs4, fs5, fs6, fs7, fs8, fs9, fs10, fs11,
+    fa0, fa1, fa2, fa3, fa4, fa5, fa6, fa7
+  },
+  morecomment=[l]{;},   % mark ; as line comment start
+  morecomment=[l]{\#},  % as well as # (even though it is unconventional)
+  morestring=[b]",      % mark " as string start/end
+  morestring=[b]'       % also mark ' as string start/end
+}
+% \end{Language_Definition}
+
+% \begin{Language_Style_Setting}
+\definecolor{myGreen}{RGB}{50, 150, 50} % 自定义颜色代Block 
+% -------------------listing 设置，代码设置-------------------
+\lstset{ %
+    backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}
+    basicstyle=\footnotesize,        % the size of the fonts that are used for the code
+    breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
+    breaklines=true,                 % sets automatic line breaking
+    captionpos=bl,                    % sets the caption-position to bottom
+    commentstyle=\color{myGreen},    % comment style
+    deletekeywords={\ldots},
+    % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+    % keywordstyle=\color{blue},       % keyword style
+    % language=Python,                      % the language of the code
+    morekeywords={*,\ldots},            % if you want to add more keywords to the set
+    numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
+    numbersep=5pt,                   % how far the line-numbers are from the code
+    numberstyle=\tiny\color{gray}, % the style that is used for the line-numbers
+    rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+    showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+    showstringspaces=false,          % underline spaces within strings only
+    showtabs=false,                  % show tabs within strings adding particular underscores
+    stepnumber=1,                    % the step between two line-numbers. If it's 1, each line will be numbered
+    stringstyle=\color{orange},     % string literal style
+    tabsize=4,                       % sets default tabsize to 2 spaces
+    language=[RISC-V]Assembler,                   % all code is RISC-V
+    identifierstyle=\color{teal},                 % user declared addresses are teal
+    %keywordstyle=[1]\color{blue!80!black},        % instructions are blue
+    %keywordstyle=[2]\color{orange!80!black},      % section*s/other directives are orange
+    %keywordstyle=[3]\color{red!50!black},         % registers are red
+    keywordstyle=[1]\color{blue},        % instructions are blue
+    keywordstyle=[2]\color{orange},      % section*s/other directives are orange
+    keywordstyle=[3]\color{red}         % registers are red
+    %title=myPython.py                   % show the filename of files included with \lstinputlisting; also try caption instead of title
+}
+% ----------------
+% \end{Language_Style_Setting}
+
+% \setCJKmonofont{Adobe Fangsong Std} % 设置等宽字体
+
+
+
+\begin{document}
+\begin{align*}
+    Result &=
+    \frac{
+        1
+    }{
+    e ^ 
+    {
+    -k \cdot
+    \left[
+    \begin{aligned}
+        &\quad F_{CenterSurroundWeightedContrast}
+        \\
+        &\pm F_{CenterWeightedContrast} 
+    \end{aligned}
+    \circ ImageOrAnySource
+    \right]
+    - b
+    }
+}
+\cdot 255
+\end{align*}
+\begin{align*}
+    Result &=
+    \frac{
+        1
+    }{
+    e ^ 
+    {
+        -k \cdot
+        \left[
+        \begin{aligned}
+            &\Sigma_{j \in Surround[1,2,3,4,5,6,7,8]}
+            \left(
+                \begin{aligned}
+                    &\left[
+                        F_{pdf}\left(
+                            \Vert{
+                                \overrightarrow{Block_{i=Center}}
+                                - \overrightarrow{Block_{j \in Surround}}
+                            }\Vert_{NormDimension}
+                        \right) \sim \mathcal{N}(\mu, \sigma^{2})
+                    \right]
+                    \\
+                    &\cdot
+                    \left[
+                        F_{Contrast}(F_{Attribute}(Block_{i =Center})， F_{Attribute}(Block_{j \in Surround}))
+                    \right]
+                \end{aligned}
+            \right)
+            \\
+            &\pm F_{CenterWeightedContrast} 
+        \end{aligned}
+        \circ ImageOrAnySource
+        \right]
+        - b
+        }
+    }
+    \cdot 255
+\end{align*}
+\begin{align*}
+F_{CentralWeightedContrast} = 
+    \left(
+    \begin{aligned}
+    &
+        \Sigma_{(k, l)\ in\ \{(1, 8), (2, 7), (3, 6), (4, 5)\}}
+    \left(
+        \begin{aligned}
+            &\left\{
+                \begin{aligned}
+                    &\left[
+                        F_{pdf}\left(
+                            \Vert{
+                                \overrightarrow{Block_{k}}
+                                - \overrightarrow{Block_{l}}
+                            }\Vert_{NormDimension}
+                        \right) \sim \mathcal{N}(\mu, \sigma^{2})
+                    \right]
+                    \\
+                    &\left[
+                        F_{pdf}\left(
+                            \Vert{
+                                \frac{
+                                    \overrightarrow{Block_{k}}
+                                    - \overrightarrow{Block_{l}}
+                                }{2}
+                            }\Vert_{NormDimension}
+                        \right) \sim \mathcal{N}(\mu, \sigma^{2})
+                    \right] \cdot 2
+                    \\
+                    &\left[
+                        F_{pdf}\left(
+                            \Vert{
+                                \frac{
+                                    \overrightarrow{Block_{Center}}
+                                    - \overrightarrow{Block_{Center}}
+                                }{2}
+                            }\Vert_{NormDimension}
+                        \right) \sim \mathcal{N}(\mu, \sigma^{2})
+                    \right] \cdot 2
+                \end{aligned}
+            \right.
+        \end{aligned}
+    \right) \cdot 2
+    \\
+    &\cdot
+    \left[
+        F_{Contrast}(F_{Attribute}(Block_{k})， F_{Attribute}(Block_{l}))
+    \right]
+    \end{aligned}
+    \right)
+\end{align*}
+\begin{align*}
+    F_{\ldots WeighedContrastFunction}
+    &=
+    [F_{Weight} \sim Distribution_{AnyDistribution}(\cdots)]
+    \cdot [F_{Contrast}]
+\end{align*}
+Note:
+\begin{align*}
+    \left\{
+        \begin{aligned}
+            &Gradient = k
+            \\
+            &Contrast = c
+            \\
+            &F_{CenterWeightedContrast}
+            \\
+            &F_{CenterSurroundContrast}
+            \\
+            &NormDimension
+            \\
+            &Distribution_{AnyDistribution}
+        \end{aligned}
+    \right.
+\end{align*}
+Could be changed like buiding blocks.
+\end{document}
