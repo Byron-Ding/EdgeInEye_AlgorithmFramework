@@ -1,10 +1,40 @@
-from typing import Callable, cast, Literal, Any
+from typing import Callable, Literal
 import functools
 import scipy.stats
 
 import numpy
-import torch
 
+def point_distance_norm(
+    central_pixel_attributes: numpy.ndarray,
+    peripheral_pixel_attributes: numpy.ndarray,
+    norm_type: Literal["fro", "nuc"] | int | float | None = None,
+    axis_dimension_index: int | None = -1
+) -> numpy.float64:
+    """
+    计算中心像素属性和周边像素属性 的距离（范数可调）
+
+    :param central_pixel_attributes: 中心像素属性(必须包含坐标)
+    :param peripheral_pixel_attributes: 周边像素属性(必须包含坐标)
+    :param norm_type: 范数类型，默认为 2 范数
+    :param axis_dimension_index: 计算范数的轴，默认为最后一个轴
+    :return: 中心像素属性和周边像素属性的差值，以及 范数值
+    """
+
+    # ============================== 距离 ==============================
+    # 计算坐标的差
+    center_peripheral_axis_difference: numpy.ndarray =\
+        central_pixel_attributes - peripheral_pixel_attributes
+
+    # print("center shape:", central_pixel_attributes.shape)
+    # print("peripheral shape:", peripheral_pixel_attributes.shape)
+    # 计算坐标的范数
+    center_peripheral_norm_value: numpy.float64 = numpy.linalg.norm(
+        center_peripheral_axis_difference,
+        ord=norm_type,
+        axis=axis_dimension_index
+    )
+
+    return center_peripheral_norm_value
 
 def central_peripheral_weight__norm__normal_distribution(
     central_pixel_attributes: numpy.ndarray,
@@ -12,7 +42,7 @@ def central_peripheral_weight__norm__normal_distribution(
     norm_type: Literal["fro", "nuc"] | int | float | None = None,
     mean: float = 0.0,
     standard_deviation: float = 1.0,
-    axis: int | None = -1
+    axis_dimension_index: int | None = -1
 ) -> numpy.ndarray:
     """
     约定：
@@ -20,33 +50,35 @@ def central_peripheral_weight__norm__normal_distribution(
     2. 周边像素属性为 peripheral_pixel_attributes
     3. 中心像素属性和周边像素属性的维度相同
     4. 以上属性的前两位为坐标，后续为其他属性
+
+    计算中心像素属性和周边像素属性 的距离（范数可调），
+    并将其作为正态分布的输入，返回正态分布的概率密度函数值
+    :param central_pixel_attributes: 中心像素属性(必须包含坐标)
+    :param peripheral_pixel_attributes: 周边像素属性(必须包含坐标)
+    :param norm_type: 范数类型，默认为 2 范数
+    :param mean: 正态分布的均值，默认为 0
+    :param standard_deviation: 正态分布的标准差，默认为 1
+    :param axis_dimension_index: 计算范数的轴，默认为最后一个轴
+    :return: 正态分布的概率密度函数值
     """
-    # 计算坐标的差
-    center_peripheral_axis_difference: numpy.ndarray | torch.Tensor =\
-        central_pixel_attributes- peripheral_pixel_attributes
-
-    # print("center shape:", central_pixel_attributes.shape)
-    # print("peripheral shape:", peripheral_pixel_attributes.shape)
-    # 计算坐标的范数
-    center_peripheral_norm_value: numpy.float64 = (numpy.linalg.norm(
-        center_peripheral_axis_difference,
-        ord=norm_type,
-        axis=axis
-    ))
-
-
-
-    # 计算正态分布的概率密度函数值
-    normal_distribution_value: float = scipy.stats.norm.pdf(
-        x=center_peripheral_norm_value,
-        loc=mean,
-        scale=standard_deviation,
+    # ============================== 距离 ==============================
+    # 计算中心像素属性和周边像素属性在指定轴上的差值
+    center_peripheral_norm_value = point_distance_norm(
+        central_pixel_attributes,
+        peripheral_pixel_attributes,
+        norm_type=norm_type,
+        axis_dimension_index=axis_dimension_index
     )
-    # 最后一个维度 < 0 反转
-    # print("shape:", center_peripheral_axis_difference.shape)
-    # 对于每一个其他维度，axis 的第二个值(最后一个维度) < 0 反转
-    normal_distribution_value = normal_distribution_value * numpy.where(
-        center_peripheral_axis_difference[..., -1] < 0, -1, 1
+
+
+    # ============================== 正态分布 ==============================
+    # 计算正态分布的概率密度函数值
+    normal_distribution_value: numpy.ndarray = numpy.asarray(
+            scipy.stats.norm.pdf(
+            x=center_peripheral_norm_value,
+            loc=mean,
+            scale=standard_deviation,
+        )
     )
 
     return normal_distribution_value
@@ -65,7 +97,7 @@ def generate_distribution_kernel(
             norm_type=2,
             mean=0,
             standard_deviation=1,
-            axis=-1
+            axis_dimension_index=-1
         ),
     center_coordinate: numpy.ndarray = numpy.array([0, 0]),
     dtype: numpy.typing.DTypeLike = numpy.float64
@@ -74,9 +106,9 @@ def generate_distribution_kernel(
     生成一个符合正态分布的卷积核
 
     :param kernel_size: 卷积核的大小
-    :param distribution_function: 分布函数，默认是正态分布
-    :param center_coordinate:
-    :param dtype:
+    :param distribution_function: 分布函数，默认是正态分布，返回概率密度函数值
+    :param center_coordinate: 中心点坐标，默认是 (0, 0)
+    :param dtype: 数据类型，默认是 numpy.float64
     :return: 卷积核矩阵，形状为 (kernel_size, kernel_size)
     """
     matrix_center_coordinate: float = (kernel_size - 1) / 2.0
