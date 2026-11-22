@@ -1,0 +1,2 @@
+# EdgeInEye_AlgorithmFramework
+threshold__compare_weight_direction__edge_detection_algorithm_framework
