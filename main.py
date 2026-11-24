@@ -9,6 +9,7 @@ from skimage import color, io
 import pathlib
 import os
 import puremagic
+import colour
 
 
 
@@ -81,7 +82,7 @@ def process_image(
     original_image_name = pathlib.Path(original_image_path).stem  # 获取文件名（不带扩展名）
     # =========================== Read the original image ===========================
     image = io.imread(original_image_path)
-    image_lab = color.rgb2lab(image)  # 转换为 Lab 颜色空间
+    # image_lab = color.rgb2lab(image)  # 转换为 Lab 颜色空间
 
     # # 计算颜色平均值
     # image_lab_mean = numpy.mean(image_lab, axis=(0, 1))
@@ -89,8 +90,13 @@ def process_image(
     # image_lab_mean = image_lab_mean / 255.0  # 将平均值归一化到 [0, 1] 范围
 
     # =========================== New Algorithm: Central-Peripheral Contrast Convolution ===========================
+    oklab_image: numpy.ndarray = colour.convert(image, "Output-Referred RGB", "Oklab")
+    oklab_image = skimage.color.lab2lch(oklab_image)  # 转换为 LCH 颜色空间
+    # L: [0, 1]
+    # C: [0, 1]
+    # H: [0, 2pi]
     convolution_result = central_peripheral_contrast_convolution_local_normalized(
-        pixel_matrix=image_lab,
+        pixel_matrix=oklab_image,
         kernel_size=kernel_size,
     )
 
