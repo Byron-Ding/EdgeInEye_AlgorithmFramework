@@ -100,16 +100,15 @@ def process_image(
     convolution_result_save = convolution_result.astype(numpy.uint8)
 
     convolution_result_save_path: str = (f"{new_algorithm_folder_path}/"
-                                         f"threshold/"
+                                         f"non_threshold/"
                                          f"{original_image_name}_k_{kernel_size}.png")
-    # Save the convolution result as an image
-    io.imsave(
+    skimage.io.imsave(
         convolution_result_save_path,
         convolution_result_save
     )
 
-    # -------------------------- Apply Thresholding: Sigmoid --------------------------
-    # 计算 sigmoid 斜率
+    # =========================== Sigmoid Thresholding ===========================
+
     slope: float = calculate_sigmoid_slope_from_upper_lower_bound(
         upper_bound=sigmoid_slope_upper_bound,
         lower_bound=sigmoid_slope_lower_bound,
