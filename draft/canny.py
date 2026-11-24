@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 # 1. 读取图像（Canny 必须在灰度图上进行）
-image = cv2.imread('../src/img.png')  # 请替换为你的图片路径
+image = cv2.imread('../src/img_1.png')  # 请替换为你的图片路径
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
 # 2. 高斯模糊降噪（非常重要！抑制无效的噪声边缘）
