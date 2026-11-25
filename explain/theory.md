@@ -1,3 +1,8 @@
+##### License:  
+
+idea: AGPL-3.0  
+
+text: CC-BY-NC-SA-4.0
 
 本算法模拟人眼，同时扩展计算与中心的偏差 
 
